@@ -1,9 +1,9 @@
-import './App.css'
+import { Loading } from './components/Loading/Loading'
 
 function App() {
   return (
     <>
-      <div>di-flow</div>
+      <Loading />
     </>
   )
 }
