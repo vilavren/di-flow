@@ -1,22 +1,36 @@
-import { Dispatch, FC, PropsWithChildren, createContext, useState } from 'react'
+import { FC, PropsWithChildren, createContext, useState } from 'react'
 
-import { IProfile } from '../interfaces/user.interface'
+import { loadLocalStorage, saveLocalStorage } from '../utils/localStorage'
 
-interface IValue {
-  user?: IProfile
-  setUser?: Dispatch<React.SetStateAction<IProfile | undefined>>
+export interface IUserState {
+  username: string
+  jwt: string
 }
 
-export const UserContext = createContext<IValue>({
-  user: undefined,
-  setUser: undefined,
+interface IUserContextValue {
+  userState: IUserState | undefined
+  setUserState: (profile: IUserState) => void
+}
+
+export const UserContext = createContext<IUserContextValue>({
+  userState: undefined,
+  setUserState: () => {},
 })
 
 export const UserContextProvider: FC<PropsWithChildren> = ({ children }) => {
-  const [user, setUser] = useState<IProfile | undefined>(undefined)
+  const [userState, setUser] = useState<IUserState | undefined>(
+    loadLocalStorage<IUserState>('user')
+  )
+
+  const setUserState = (profile: IUserState) => {
+    if (profile) {
+      setUser(profile)
+      saveLocalStorage<IUserState>('user', profile)
+    }
+  }
 
   return (
-    <UserContext.Provider value={{ user, setUser }}>
+    <UserContext.Provider value={{ userState, setUserState }}>
       {children}
     </UserContext.Provider>
   )

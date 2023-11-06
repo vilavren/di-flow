@@ -1,10 +1,13 @@
 import { Box, Container } from '@mui/material'
+import { useContext } from 'react'
 import { Outlet, Navigate } from 'react-router-dom'
 
-export const AuthLayout = () => {
-  const jwt = false
+import { UserContext } from '../../context/user.context'
 
-  if (jwt) {
+export const AuthLayout = () => {
+  const { userState } = useContext(UserContext)
+
+  if (userState?.jwt) {
     return <Navigate to="/" />
   }
 

@@ -1,12 +1,42 @@
 import LoadingButton from '@mui/lab/LoadingButton'
 import { Box, Button, TextField } from '@mui/material'
-import { FC } from 'react'
-import { Link } from 'react-router-dom'
+import { FC, useContext } from 'react'
+import { SubmitHandler, useForm } from 'react-hook-form'
+import { Link, Navigate } from 'react-router-dom'
+
+import { fetchLogin } from '../api/user.api'
+import { UserContext } from '../context/user.context'
+import { ILogin } from '../interfaces/user.interface'
 
 export const LoginPage: FC = () => {
+  const { userState, setUserState } = useContext(UserContext)
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isValid, isSubmitting },
+  } = useForm<ILogin>({
+    defaultValues: {
+      email: '',
+      password: '',
+    },
+  })
+
+  if (userState) {
+    return <Navigate to="/" />
+  }
+
+  const onSubmit: SubmitHandler<ILogin> = async (values) => {
+    const data = await fetchLogin(values)
+    if (data.token) {
+      setUserState({ username: data.username, jwt: data.token })
+    }
+    console.log(data)
+  }
+
   return (
     <>
-      <Box component="form" sx={{ mt: 1 }}>
+      <Box component="form" sx={{ mt: 1 }} onSubmit={handleSubmit(onSubmit)}>
         <TextField
           margin="normal"
           required
@@ -14,6 +44,11 @@ export const LoginPage: FC = () => {
           type="email"
           id="name"
           label="Email"
+          error={false}
+          helperText={''}
+          {...register('email', {
+            required: 'Укажите email',
+          })}
         />
         <TextField
           margin="normal"
@@ -22,6 +57,11 @@ export const LoginPage: FC = () => {
           type="password"
           id="password"
           label="Пароль"
+          error={false}
+          helperText={''}
+          {...register('password', {
+            required: 'Укажите пароль',
+          })}
         />
         <LoadingButton
           sx={{
@@ -32,6 +72,8 @@ export const LoginPage: FC = () => {
           fullWidth
           color="success"
           type="submit"
+          disabled={!isValid}
+          loading={isSubmitting}
         >
           Войти
         </LoadingButton>
