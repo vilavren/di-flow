@@ -1,6 +1,7 @@
 import LoadingButton from '@mui/lab/LoadingButton'
 import { Box, Button, TextField } from '@mui/material'
-import { FC, useContext } from 'react'
+import { AxiosError } from 'axios'
+import { FC, useContext, useState } from 'react'
 import { SubmitHandler, useForm } from 'react-hook-form'
 import { Link, Navigate } from 'react-router-dom'
 
@@ -10,6 +11,7 @@ import { ILogin } from '../interfaces/user.interface'
 
 export const LoginPage: FC = () => {
   const { userState, setUserState } = useContext(UserContext)
+  const [apiError, setApiError] = useState<string>('')
 
   const {
     register,
@@ -20,6 +22,7 @@ export const LoginPage: FC = () => {
       email: '',
       password: '',
     },
+    mode: 'onChange',
   })
 
   if (userState) {
@@ -27,12 +30,21 @@ export const LoginPage: FC = () => {
   }
 
   const onSubmit: SubmitHandler<ILogin> = async (values) => {
-    const data = await fetchLogin(values)
-    if (data.token) {
-      setUserState({ username: data.username, jwt: data.token })
+    try {
+      const data = await fetchLogin(values)
+      if (data.token) {
+        setUserState({ username: data.username, jwt: data.token })
+      }
+    } catch (error) {
+      if (error instanceof AxiosError && error.response?.status === 401) {
+        setApiError(String(error.response.data.message))
+      }
     }
-    console.log(data)
   }
+
+  setTimeout(() => {
+    setApiError('')
+  }, 3000)
 
   return (
     <>
@@ -44,8 +56,8 @@ export const LoginPage: FC = () => {
           type="email"
           id="name"
           label="Email"
-          error={false}
-          helperText={''}
+          error={Boolean(apiError) || Boolean(errors.email)}
+          helperText={errors.email?.message || apiError}
           {...register('email', {
             required: 'Укажите email',
           })}
@@ -57,8 +69,8 @@ export const LoginPage: FC = () => {
           type="password"
           id="password"
           label="Пароль"
-          error={false}
-          helperText={''}
+          error={Boolean(apiError) || Boolean(errors.password)}
+          helperText={errors.password?.message || apiError}
           {...register('password', {
             required: 'Укажите пароль',
           })}

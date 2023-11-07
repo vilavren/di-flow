@@ -10,7 +10,7 @@ const fetchAuth = async <T>(url: string, params: T) => {
     return data
   } catch (error) {
     if (error instanceof AxiosError) {
-      throw new Error(error.response?.data.message)
+      throw error
     }
     throw error
   }
