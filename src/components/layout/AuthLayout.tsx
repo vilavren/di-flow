@@ -1,17 +1,34 @@
 import { Box, Container } from '@mui/material'
-import { useContext } from 'react'
-import { Outlet, Navigate } from 'react-router-dom'
+import { useContext, useEffect, useState } from 'react'
+import { Outlet, useNavigate } from 'react-router-dom'
 
+import { fetchIsAuth } from '../../api/user.api'
 import { UserContext } from '../../context/user.context'
+import { Loading } from '../common/Loading'
 
 export const AuthLayout = () => {
-  const { userState } = useContext(UserContext)
+  const navigate = useNavigate()
+  const { userState, setUserState } = useContext(UserContext)
+  const [isLoading, setIsLoading] = useState<boolean>(false)
 
-  if (userState?.jwt) {
-    return <Navigate to="/" />
-  }
+  useEffect(() => {
+    const isAuth = async () => {
+      setIsLoading(true)
+      try {
+        await fetchIsAuth()
+        navigate('/')
+      } catch (error) {
+        setUserState(undefined)
+      }
+      setIsLoading(false)
+    }
 
-  return (
+    if (userState?.jwt) isAuth()
+  }, [])
+
+  return isLoading ? (
+    <Loading />
+  ) : (
     <Container component="main" maxWidth="xs">
       <Box
         sx={{

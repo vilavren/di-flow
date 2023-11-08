@@ -9,7 +9,7 @@ export interface IUserState {
 
 interface IUserContextValue {
   userState: IUserState | undefined
-  setUserState: (profile: IUserState) => void
+  setUserState: (profile: IUserState | undefined) => void
 }
 
 export const UserContext = createContext<IUserContextValue>({
@@ -22,10 +22,13 @@ export const UserContextProvider: FC<PropsWithChildren> = ({ children }) => {
     loadLocalStorage<IUserState>('user')
   )
 
-  const setUserState = (profile: IUserState) => {
+  const setUserState = (profile: IUserState | undefined) => {
     if (profile) {
       setUser(profile)
       saveLocalStorage<IUserState>('user', profile)
+    } else {
+      setUser(undefined)
+      localStorage.removeItem('user')
     }
   }
 
